@@ -1,0 +1,15 @@
+name: kashein
+services:
+  app:
+    build:
+      context: ../
+      dockerfile: ./docker/app/dockerfile
+      args:
+        version: dev
+      ssh:
+        - default
+    ports:
+      - 8080:80
+    command:
+      - "api"
+      - "--port=80"

@@ -1,0 +1,20 @@
+FROM golang:1.22 AS build
+ARG version=dev
+
+WORKDIR /src
+COPY . ./
+
+RUN go env -w GOCACHE=/gocache && \
+    go env -w GOMODCACHE=/gomodcache
+RUN --mount=type=ssh --mount=type=cache,target="/gomodcache" \
+    go mod download
+RUN --mount=type=cache,target="/gocache" --mount=type=cache,target="/gomodcache" \
+    CGO_ENABLED=0 GOOS=linux go build -ldflags="-X 'kashein/app.Version=$version'" -o /bin/kashein
+
+FROM alpine
+
+WORKDIR /
+
+COPY --from=build /bin/kashein kashein
+
+ENTRYPOINT ["/kashein"]
